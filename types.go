@@ -56,19 +56,37 @@ type Transaction struct {
 	Type             string `json:"type"`
 }
 
-type RPCRequest struct {
+// NewHeadEvent represents a new block header received via the newHeads subscription.
+type NewHeadEvent struct {
+	Number           string `json:"number"`
+	ParentHash       string `json:"parentHash"`
+	Nonce            string `json:"nonce"`
+	Sha3Uncles       string `json:"sha3Uncles"`
+	LogsBloom        string `json:"logsBloom"`
+	TransactionsRoot string `json:"transactionsRoot"`
+	StateRoot        string `json:"stateRoot"`
+	ReceiptsRoot     string `json:"receiptsRoot"`
+	Miner            string `json:"miner"`
+	Difficulty       string `json:"difficulty"`
+	ExtraData        string `json:"extraData"`
+	GasLimit         string `json:"gasLimit"`
+	GasUsed          string `json:"gasUsed"`
+	Timestamp        string `json:"timestamp"`
+}
+
+type rpcRequest struct {
 	JSONRPC string        `json:"jsonrpc"`
 	ID      int           `json:"id"`
 	Method  string        `json:"method"`
 	Params  []interface{} `json:"params"`
 }
 
-type SubscriptionMessage struct {
+type subscriptionMessage struct {
 	Subscription string          `json:"subscription"`
 	Result       json.RawMessage `json:"result"`
 }
 
-type RPCEnvelope struct {
+type rpcEnvelope struct {
 	ID     int             `json:"id,omitempty"`
 	Result string          `json:"result,omitempty"`
 	Method string          `json:"method,omitempty"`
