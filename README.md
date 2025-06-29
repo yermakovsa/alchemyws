@@ -24,7 +24,9 @@ Designed for use in Go services where performance, clarity, and reliability matt
   * transaction hashes (lightweight mode)
 
   * full transaction objects (full mode)
-
+* Subscribe to new block headers (newHeads):
+  * receive full block metadata for every new chain head
+  * includes support for handling chain reorganizations (reorgs)
 * Non-blocking, buffered channels for event streams
 
 * Graceful handling of decode failures and malformed messages
@@ -120,6 +122,8 @@ func main() {
 * Handle incoming events by reading from the returned channels.
 
 * Gracefully handle termination signals to close the client properly.
+  
+⚙️ For more complete usage examples, including subscriptions to newHeads, see the [examples/](examples) directory.
 
 ## API Reference
 
@@ -148,7 +152,7 @@ Subscribes to mined transaction events with optional filtering.
 #### Returns
 * `<-chan MinedTxEvent` - Channel delivering mined transaction events.
 * `error` - Subscription error, if any.
-
+*   
 ### `func (a *AlchemyClient) SubscribePending(opts PendingTxOptions) (<-chan PendingTxEvent, error)`
 
 Subscribes to pending transaction events with optional filtering.
@@ -163,12 +167,25 @@ Subscribes to pending transaction events with optional filtering.
 * `<-chan PendingTxEvent` - Channel delivering pending transaction events.
 * `error` - Subscription error, if any.
 
+### `func (a *AlchemyClient) SubscribeNewHeads() (<-chan NewHeadEvent, error)`
+
+Subscribes to new block headers (`newHeads`) as they are added to the blockchain.
+
+This subscription emits a new event each time a block is appended to the chain, including during chain reorganizations. In case of reorgs, multiple headers with the same block number may be emitted. The most recent one should be considered correct.
+
+#### Parameters
+*None*
+
+#### Returns
+* `<-chan NewHeadEvent` - Channel delivering new block header events.
+* `error` - Subscription error, if any.
+
 ### `func (a *AlchemyClient) Close() error`
 
 Closes the WebSocket connection and cleans up resources.
 
 #### Returns
-* `error` - Error on close failure, if any.z
+* `error` - Error on close failure, if any.
 
 ## License
 

@@ -16,6 +16,7 @@ const (
 	JSONRPCVersion = "2.0"
 	MethodMined    = "alchemy_minedTransactions"
 	MethodPending  = "alchemy_pendingTransactions"
+	MethodNewHeads = "newHeads"
 )
 
 type WSConn interface {
@@ -117,10 +118,18 @@ func (a *AlchemyClient) SubscribePending(opts PendingTxOptions) (<-chan PendingT
 	})
 }
 
+// SubscribeNewHeads subscribes to new block headers added to the blockchain.
+func (a *AlchemyClient) SubscribeNewHeads() (<-chan NewHeadEvent, error) {
+	return subscribeGeneric[NewHeadEvent](a, MethodNewHeads, nil, func(data json.RawMessage) (any, error) {
+		var msg NewHeadEvent
+		return msg, json.Unmarshal(data, &msg)
+	})
+}
+
 // Core generic subscription handler
 func subscribeGeneric[T any](a *AlchemyClient, method string, opts any, decode func(json.RawMessage) (any, error)) (<-chan T, error) {
 	id := int(atomic.AddInt64(&a.requestCounter, 1))
-	req := RPCRequest{
+	req := rPCRequest{
 		JSONRPC: JSONRPCVersion,
 		ID:      id,
 		Method:  "eth_subscribe",
@@ -196,7 +205,7 @@ func (a *AlchemyClient) readLoop() {
 				return
 			}
 
-			var envelope RPCEnvelope
+			var envelope rPCEnvelope
 			if err := json.Unmarshal(data, &envelope); err != nil {
 				a.logger.Printf("[alchemyws] unmarshal error: %v", err)
 				continue
@@ -222,7 +231,7 @@ func (a *AlchemyClient) handleSubscriptionResponse(id int, subID string) {
 }
 
 func (a *AlchemyClient) handleEventMessage(params json.RawMessage) {
-	var msg SubscriptionMessage
+	var msg subscriptionMessage
 	if err := json.Unmarshal(params, &msg); err != nil {
 		a.logger.Printf("[alchemyws] event unmarshal error: %v", err)
 		return
