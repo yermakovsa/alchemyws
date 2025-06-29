@@ -84,12 +84,12 @@ func sendToConn(t *testing.T, conn *mockConn, msg any) {
 	conn.readQueue <- b
 }
 
-func subscriptionEnvelope(subID string, result any) rPCEnvelope {
+func subscriptionEnvelope(subID string, result any) rpcEnvelope {
 	msg := subscriptionMessage{
 		Subscription: subID,
 		Result:       marshalRaw(result),
 	}
-	return rPCEnvelope{
+	return rpcEnvelope{
 		Method: "eth_subscription",
 		Params: marshalRaw(msg),
 	}
@@ -104,7 +104,7 @@ func TestSubscribeMined_Success(t *testing.T) {
 	event := MinedTxEvent{Transaction: Transaction{Hash: "0x123"}}
 
 	go func() {
-		sendToConn(t, conn, rPCEnvelope{ID: 1, Result: minedSubID})
+		sendToConn(t, conn, rpcEnvelope{ID: 1, Result: minedSubID})
 		time.Sleep(5 * time.Millisecond)
 		sendToConn(t, conn, subscriptionEnvelope(minedSubID, event))
 	}()
@@ -121,10 +121,10 @@ func TestSubscribeMined_DecodeError(t *testing.T) {
 	client, _ := newAlchemyClientWithConn(fakeAPIKey, nil, conn)
 
 	go func() {
-		sendToConn(t, conn, rPCEnvelope{ID: 1, Result: minedSubID})
+		sendToConn(t, conn, rpcEnvelope{ID: 1, Result: minedSubID})
 		time.Sleep(5 * time.Millisecond)
 		msg := subscriptionMessage{Subscription: minedSubID, Result: json.RawMessage(`{invalid}`)}
-		sendToConn(t, conn, rPCEnvelope{Method: "eth_subscription", Params: marshalRaw(msg)})
+		sendToConn(t, conn, rpcEnvelope{Method: "eth_subscription", Params: marshalRaw(msg)})
 	}()
 
 	ch, err := client.SubscribeMined(MinedTxOptions{})
@@ -144,7 +144,7 @@ func TestSubscribePending_HashOnly(t *testing.T) {
 	hash := "0xabc"
 
 	go func() {
-		sendToConn(t, conn, rPCEnvelope{ID: 1, Result: pendingHashSub})
+		sendToConn(t, conn, rpcEnvelope{ID: 1, Result: pendingHashSub})
 		time.Sleep(5 * time.Millisecond)
 		sendToConn(t, conn, subscriptionEnvelope(pendingHashSub, hash))
 	}()
@@ -163,7 +163,7 @@ func TestSubscribePending_FullTransaction(t *testing.T) {
 	tx := Transaction{Hash: "0xdeadbeef"}
 
 	go func() {
-		sendToConn(t, conn, rPCEnvelope{ID: 1, Result: pendingFullSub})
+		sendToConn(t, conn, rpcEnvelope{ID: 1, Result: pendingFullSub})
 		time.Sleep(5 * time.Millisecond)
 		sendToConn(t, conn, subscriptionEnvelope(pendingFullSub, tx))
 	}()
@@ -180,10 +180,10 @@ func TestSubscribePending_DecodeError(t *testing.T) {
 	client, _ := newAlchemyClientWithConn(fakeAPIKey, nil, conn)
 
 	go func() {
-		sendToConn(t, conn, rPCEnvelope{ID: 1, Result: "sub-pending-err"})
+		sendToConn(t, conn, rpcEnvelope{ID: 1, Result: "sub-pending-err"})
 		time.Sleep(5 * time.Millisecond)
 		msg := subscriptionMessage{Subscription: "sub-pending-err", Result: json.RawMessage(`{malformed`)}
-		sendToConn(t, conn, rPCEnvelope{Method: "eth_subscription", Params: marshalRaw(msg)})
+		sendToConn(t, conn, rpcEnvelope{Method: "eth_subscription", Params: marshalRaw(msg)})
 	}()
 
 	ch, err := client.SubscribePending(PendingTxOptions{})
@@ -214,7 +214,7 @@ func TestSubscribeMinedAndPending_Concurrent(t *testing.T) {
 		{Hash: "0xd"},
 	}
 
-	send := func(env rPCEnvelope) {
+	send := func(env rpcEnvelope) {
 		b, err := json.Marshal(env)
 		require.NoError(t, err)
 		conn.readQueue <- b
@@ -222,9 +222,9 @@ func TestSubscribeMinedAndPending_Concurrent(t *testing.T) {
 
 	// Simulate server responses
 	go func() {
-		send(rPCEnvelope{ID: 1, Result: "sub-id-mined"})
+		send(rpcEnvelope{ID: 1, Result: "sub-id-mined"})
 		time.Sleep(10 * time.Millisecond)
-		send(rPCEnvelope{ID: 2, Result: "sub-id-pending"})
+		send(rpcEnvelope{ID: 2, Result: "sub-id-pending"})
 
 		time.Sleep(10 * time.Millisecond) // Simulate slight delay
 
@@ -290,7 +290,7 @@ func TestSubscribeNewHeads_ReceivesBlockHeader(t *testing.T) {
 	}
 
 	go func() {
-		sendToConn(t, conn, rPCEnvelope{ID: 1, Result: "0xsub-min"})
+		sendToConn(t, conn, rpcEnvelope{ID: 1, Result: "0xsub-min"})
 		time.Sleep(5 * time.Millisecond)
 		sendToConn(t, conn, subscriptionEnvelope("0xsub-min", head))
 	}()

@@ -129,7 +129,7 @@ func (a *AlchemyClient) SubscribeNewHeads() (<-chan NewHeadEvent, error) {
 // Core generic subscription handler
 func subscribeGeneric[T any](a *AlchemyClient, method string, opts any, decode func(json.RawMessage) (any, error)) (<-chan T, error) {
 	id := int(atomic.AddInt64(&a.requestCounter, 1))
-	req := rPCRequest{
+	req := rpcRequest{
 		JSONRPC: JSONRPCVersion,
 		ID:      id,
 		Method:  "eth_subscribe",
@@ -205,7 +205,7 @@ func (a *AlchemyClient) readLoop() {
 				return
 			}
 
-			var envelope rPCEnvelope
+			var envelope rpcEnvelope
 			if err := json.Unmarshal(data, &envelope); err != nil {
 				a.logger.Printf("[alchemyws] unmarshal error: %v", err)
 				continue

@@ -74,7 +74,7 @@ type NewHeadEvent struct {
 	Timestamp        string `json:"timestamp"`
 }
 
-type rPCRequest struct {
+type rpcRequest struct {
 	JSONRPC string        `json:"jsonrpc"`
 	ID      int           `json:"id"`
 	Method  string        `json:"method"`
@@ -86,7 +86,7 @@ type subscriptionMessage struct {
 	Result       json.RawMessage `json:"result"`
 }
 
-type rPCEnvelope struct {
+type rpcEnvelope struct {
 	ID     int             `json:"id,omitempty"`
 	Result string          `json:"result,omitempty"`
 	Method string          `json:"method,omitempty"`
