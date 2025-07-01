@@ -17,6 +17,7 @@ const (
 	MethodMined    = "alchemy_minedTransactions"
 	MethodPending  = "alchemy_pendingTransactions"
 	MethodNewHeads = "newHeads"
+	MethodLogs     = "logs"
 )
 
 type WSConn interface {
@@ -123,6 +124,13 @@ func (a *AlchemyClient) SubscribeNewHeads() (<-chan NewHeadEvent, error) {
 	return subscribeGeneric[NewHeadEvent](a, MethodNewHeads, nil, func(data json.RawMessage) (any, error) {
 		var msg NewHeadEvent
 		return msg, json.Unmarshal(data, &msg)
+	})
+}
+
+func (a *AlchemyClient) SubscribeLogs(filter LogsFilter) (<-chan LogEvent, error) {
+	return subscribeGeneric[LogEvent](a, MethodLogs, []interface{}{"logs", filter}, func(data json.RawMessage) (any, error) {
+		var evt LogEvent
+		return evt, json.Unmarshal(data, &evt)
 	})
 }
 

@@ -74,6 +74,25 @@ type NewHeadEvent struct {
 	Timestamp        string `json:"timestamp"`
 }
 
+// LogEvent represents a log emitted by the logs subscription.
+type LogEvent struct {
+	Address          string   `json:"address"`
+	BlockHash        string   `json:"blockHash"`
+	BlockNumber      string   `json:"blockNumber"`
+	Data             string   `json:"data"`
+	LogIndex         string   `json:"logIndex"`
+	Topics           []string `json:"topics"`
+	TransactionHash  string   `json:"transactionHash"`
+	TransactionIndex string   `json:"transactionIndex"`
+	Removed          bool     `json:"removed,omitempty"`
+}
+
+// LogsFilter represents the subscription filter for logs.
+type LogsFilter struct {
+	Address string     `json:"address,omitempty"`
+	Topics  [][]string `json:"topics,omitempty"` // can be null, string, or array of strings
+}
+
 type rpcRequest struct {
 	JSONRPC string        `json:"jsonrpc"`
 	ID      int           `json:"id"`
