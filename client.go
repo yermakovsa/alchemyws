@@ -12,12 +12,13 @@ import (
 )
 
 const (
-	AlchemyWSURL   = "wss://eth-mainnet.g.alchemy.com/v2/"
-	JSONRPCVersion = "2.0"
-	MethodMined    = "alchemy_minedTransactions"
-	MethodPending  = "alchemy_pendingTransactions"
-	MethodNewHeads = "newHeads"
-	MethodLogs     = "logs"
+	AlchemyWSURL                 = "wss://eth-mainnet.g.alchemy.com/v2/"
+	JSONRPCVersion               = "2.0"
+	MethodMined                  = "alchemy_minedTransactions"
+	MethodPending                = "alchemy_pendingTransactions"
+	MethodNewHeads               = "newHeads"
+	MethodLogs                   = "logs"
+	MethodNewPendingTransactions = "newPendingTransactions"
 )
 
 type WSConn interface {
@@ -131,6 +132,14 @@ func (a *AlchemyClient) SubscribeLogs(filter LogsFilter) (<-chan LogEvent, error
 	return subscribeGeneric[LogEvent](a, MethodLogs, []interface{}{"logs", filter}, func(data json.RawMessage) (any, error) {
 		var evt LogEvent
 		return evt, json.Unmarshal(data, &evt)
+	})
+}
+
+// SubscribeNewPendingTransactions subscribes to pending transaction hashes.
+func (a *AlchemyClient) SubscribeNewPendingTransactions() (<-chan string, error) {
+	return subscribeGeneric[string](a, MethodNewPendingTransactions, nil, func(data json.RawMessage) (any, error) {
+		var hash string
+		return hash, json.Unmarshal(data, &hash)
 	})
 }
 

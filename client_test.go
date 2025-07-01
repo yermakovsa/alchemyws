@@ -341,3 +341,22 @@ func TestSubscribeLogs_ReceivesLogEvent(t *testing.T) {
 	assert.Equal(t, logEvent.TransactionHash, result.TransactionHash)
 	assert.Equal(t, logEvent.Topics, result.Topics)
 }
+
+func TestSubscribeNewPendingTransactions_ReceivesHash(t *testing.T) {
+	conn := newMockConn()
+	client, _ := newAlchemyClientWithConn(fakeAPIKey, nil, conn)
+
+	expectedHash := "0xabc123"
+
+	go func() {
+		sendToConn(t, conn, rpcEnvelope{ID: 1, Result: "0xsub-new-pending"})
+		time.Sleep(5 * time.Millisecond)
+		sendToConn(t, conn, subscriptionEnvelope("0xsub-new-pending", expectedHash))
+	}()
+
+	ch, err := client.SubscribeNewPendingTransactions()
+	require.NoError(t, err)
+
+	result := waitFor(t, ch)
+	assert.Equal(t, expectedHash, result)
+}

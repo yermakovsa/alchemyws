@@ -20,22 +20,22 @@ func main() {
 	}
 	defer client.Close()
 
-	// Subscribe to new block headers
-	headers, err := client.SubscribeNewHeads()
+	// Subscribe to new pending transactions
+	newPendingTransactions, err := client.SubscribeNewPendingTransactions()
 	if err != nil {
-		log.Fatalf("failed to subscribe to new heads: %v", err)
+		log.Fatalf("failed to subscribe to new pending transactions: %v", err)
 	}
 
-	// Process headers for 30 seconds
+	// Process new pending transactions for 30 seconds
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	fmt.Println("Listening for new block headers...")
+	fmt.Println("Listening for new pending transactions...")
 
 	for {
 		select {
-		case head := <-headers:
-			fmt.Printf("New Block Head: %+v\n", head)
+		case newPendingTransaction := <-newPendingTransactions:
+			fmt.Printf("New Pending Transaction Hash: %+v\n", newPendingTransaction)
 		case <-ctx.Done():
 			fmt.Println("Stopping listener after 30s.")
 			return
