@@ -10,7 +10,7 @@ This library provides real-time access to Ethereum transaction events using Alch
 
 Designed for use in Go services where performance, clarity, and reliability matter.
 
-⚠️ **Warning:** This library is currently in active development (v0.12.0). The API is evolving, and improvements are ongoing.
+⚠️ **Warning:** This library is currently in active development (v0.3.0). The API is evolving, and improvements are ongoing.
 
 ## Features
 
@@ -32,13 +32,16 @@ Designed for use in Go services where performance, clarity, and reliability matt
   
   * includes support for handling chain reorganizations (reorgs)
 
-* Subscribe to logs (`logs`)::
+* Subscribe to logs (`logs`):
   
   * filter logs by address and topic combinations
   
   * receive logs from newly mined blocks
   
   * handles reorgs and `removed` flag for dropped logs
+  
+* Subscribe to raw pending transaction hashes via `newPendingTransactions`:
+  *  lightweight stream of transaction hashes from Alchemy mempool
 
 * Non-blocking, buffered channels for event streams
 
@@ -206,6 +209,19 @@ This subscription provides log events for contracts emitting logs that match the
 
 #### Returns
 * `<-chan LogEvent` - Channel delivering log events.
+* `error` - Subscription error, if any.
+
+### `func (a *AlchemyClient) SubscribeNewPendingTransactions() (<-chan string, error)`
+
+Subscribes to raw pending transaction hashes via the `newPendingTransactions` method.
+
+This stream emits transaction hashes for all transactions seen in the Alchemy mempool (no filtering or full objects provided).
+
+#### Parameters
+*None*
+
+#### Returns
+* `<-chan string` - Channel delivering pending transaction hashes.  
 * `error` - Subscription error, if any.
 
 ### `func (a *AlchemyClient) Close() error`
