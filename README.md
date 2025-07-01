@@ -10,11 +10,12 @@ This library provides real-time access to Ethereum transaction events using Alch
 
 Designed for use in Go services where performance, clarity, and reliability matter.
 
-⚠️ **Warning:** This library is currently in active development (v0.10.0). The API is evolving, and improvements are ongoing.
+⚠️ **Warning:** This library is currently in active development (v0.12.0). The API is evolving, and improvements are ongoing.
 
 ## Features
 
 * Subscribe to mined transactions as either:
+  
   * transaction hashes (lightweight mode)
 
   * full transaction objects (full mode)
@@ -24,9 +25,21 @@ Designed for use in Go services where performance, clarity, and reliability matt
   * transaction hashes (lightweight mode)
 
   * full transaction objects (full mode)
-* Subscribe to new block headers (newHeads):
+  
+* Subscribe to new block headers (`newHeads`):
+  
   * receive full block metadata for every new chain head
+  
   * includes support for handling chain reorganizations (reorgs)
+
+* Subscribe to logs (`logs`)::
+  
+  * filter logs by address and topic combinations
+  
+  * receive logs from newly mined blocks
+  
+  * handles reorgs and `removed` flag for dropped logs
+
 * Non-blocking, buffered channels for event streams
 
 * Graceful handling of decode failures and malformed messages
@@ -178,6 +191,21 @@ This subscription emits a new event each time a block is appended to the chain, 
 
 #### Returns
 * `<-chan NewHeadEvent` - Channel delivering new block header events.
+* `error` - Subscription error, if any.
+
+### `func (a *AlchemyClient) SubscribeLogs(filter LogsFilter) (<-chan LogEvent, error)`
+
+Subscribes to logs emitted in new blocks based on address and topic filters.
+
+This subscription provides log events for contracts emitting logs that match the given criteria. It also supports handling of chain reorganizations via the `removed` field.
+
+#### Parameters
+* `filter` - Log subscription filter options:
+  * `Address string` - Filter logs by emitting contract address(es).
+  * `Topics [][]string` - Up to 4 indexed topic filters for the log event signature and parameters.
+
+#### Returns
+* `<-chan LogEvent` - Channel delivering log events.
 * `error` - Subscription error, if any.
 
 ### `func (a *AlchemyClient) Close() error`

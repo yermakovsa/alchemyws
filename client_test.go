@@ -302,3 +302,42 @@ func TestSubscribeNewHeads_ReceivesBlockHeader(t *testing.T) {
 	assert.Equal(t, head.Number, result.Number)
 	assert.Equal(t, head.ParentHash, result.ParentHash)
 }
+
+func TestSubscribeLogs_ReceivesLogEvent(t *testing.T) {
+	conn := newMockConn()
+	client, _ := newAlchemyClientWithConn(fakeAPIKey, nil, conn)
+
+	logEvent := LogEvent{
+		Address:          "0x1234567890abcdef",
+		BlockHash:        "0xblockhash",
+		BlockNumber:      "0x1a",
+		Data:             "0xdeadbeef",
+		LogIndex:         "0x0",
+		Topics:           []string{"0xabc"},
+		TransactionHash:  "0xtxhash",
+		TransactionIndex: "0x1",
+	}
+
+	filter := LogsFilter{
+		Address: "0x1234567890abcdef",
+		Topics: [][]string{
+			{"0xabc"},
+		},
+	}
+
+	go func() {
+		sendToConn(t, conn, rpcEnvelope{ID: 1, Result: "0xsub-log"})
+		time.Sleep(5 * time.Millisecond)
+		sendToConn(t, conn, subscriptionEnvelope("0xsub-log", logEvent))
+	}()
+
+	ch, err := client.SubscribeLogs(filter)
+	require.NoError(t, err)
+
+	result := waitFor(t, ch)
+	assert.Equal(t, logEvent.Address, result.Address)
+	assert.Equal(t, logEvent.BlockHash, result.BlockHash)
+	assert.Equal(t, logEvent.Data, result.Data)
+	assert.Equal(t, logEvent.TransactionHash, result.TransactionHash)
+	assert.Equal(t, logEvent.Topics, result.Topics)
+}
